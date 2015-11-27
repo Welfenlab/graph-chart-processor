@@ -23,7 +23,7 @@
     "Markdown",
     "Charts"
   ],
-  "repository": "gitlab:Welfenlab/graph-chart-processor",
+  "repository": "github:Welfenlab/graph-chart-processor",
   "contributors": [
     "Alexandere Treptau <alex@treptau.eu> (https://github.com/fasib)"
   ],
