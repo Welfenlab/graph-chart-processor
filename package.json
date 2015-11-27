@@ -1,0 +1,33 @@
+{
+  "name": "@more-markdown/graph-chart-processor",
+  "version": "0.0.1",
+  "description": "Plugin for more-markdown to support graph charts.",
+  "main": "lib/chart_processor.js",
+  "dependencies": {
+    "chart.js": "^1.0.2",
+    "d3": "^3.5.9",
+    "nvd3": "^1.8.1",
+    "plotly.js": "^1.1.0"
+  },
+  "devDependencies": {
+    "browserify": "^11.0.1",
+    "coffeeify": "^1.2.0",
+    "gulp": "^3.9.0",
+    "gulp-coffee": "^2.3.1",
+    "gulp-util": "^3.0.6",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "prepublish": "node node_modules/gulp/bin/gulp.js"
+  },
+  "keywords": [
+    "Markdown",
+    "Charts"
+  ],
+  "repository": "gitlab:Welfenlab/graph-chart-processor",
+  "contributors": [
+    "Alexandere Treptau <alex@treptau.eu> (https://github.com/fasib)"
+  ],
+  "license": "MIT"
+}
