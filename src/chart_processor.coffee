@@ -1,7 +1,6 @@
 markdownItGraph = require './md_graph'
 d3 = require 'd3'
-Plotly = require 'plotly.js'
-#nvd3 = require 'nvd3'
+nvd3 = require 'nvd3'
 uuid = require 'node-uuid'
 
 graphChartProcessor = (tokens, graph_template, error_template) ->
@@ -32,25 +31,28 @@ graphChartProcessor = (tokens, graph_template, error_template) ->
         data = []
         for part in out
            line = []
-           xArray = []
-           yArray = []
+           xyArray = []
            for i in part
-             xArray.push(i[0])
-             yArray.push(i[1])
+             xyArray.push({x:i[0], y:i[1]})
 
-           data.push({
-             x : xArray,
-             y : yArray,
-             type: 'scatter'
-           })
+           data.push({values:xyArray})
 
-        id = "tree-dg-" + uuid.v4()
+        id = "charts-dg-" + uuid.v4()
         postProcessors.registerElemenbById id, (elem, done) ->
-            Plotly.newPlot(elem, data);
+            fnc = () ->
+              chart = nvd3.models.lineWithFocusChart()
+              chart.useInteractiveGuideline(true)
+              console.log elem
+              d3.select(elem.childNodes[0]).datum(data).call(chart)
+              
+              nvd3.utils.windowResize(chart.update);
+              return chart
+              
+            nvd3.addGraph fnc
             
             svgElem = elem.getElementsByClassName('output')[0]
             svgHeight = svgElem?.getBoundingClientRect().height || 0
-            elem.style.height = svgHeight + 22
+            elem.style.height = 300
 
             done()
 

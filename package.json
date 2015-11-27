@@ -4,10 +4,8 @@
   "description": "Plugin for more-markdown to support graph charts.",
   "main": "lib/chart_processor.js",
   "dependencies": {
-    "chart.js": "^1.0.2",
     "d3": "^3.5.9",
-    "nvd3": "^1.8.1",
-    "plotly.js": "^1.1.0"
+    "nvd3": "^1.8.1"
   },
   "devDependencies": {
     "browserify": "^11.0.1",
