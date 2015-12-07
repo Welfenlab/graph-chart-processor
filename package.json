@@ -1,6 +1,6 @@
 {
   "name": "@more-markdown/graph-chart-processor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Plugin for more-markdown to support graph charts.",
   "main": "lib/chart_processor.js",
   "dependencies": {
