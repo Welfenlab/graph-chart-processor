@@ -5,7 +5,7 @@
   "main": "lib/chart_processor.js",
   "dependencies": {
     "d3": "^3.5.9",
-    "nvd3": "^1.8.1"
+    "nvd3": "fasib/nvd3#fix"
   },
   "devDependencies": {
     "browserify": "^11.0.1",
