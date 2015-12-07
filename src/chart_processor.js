@@ -65,7 +65,6 @@ graphChartProcessor = function (tokens, graph_template, error_template) {
             nvd3.addGraph(fnc)
             svgElem = elem.getElementsByClassName('output')[0]
             svgHeight = (svgElem != null ? svgElem.getBoundingClientRect().height : void 0) || 0
-            console.log(svgElem, elem)
             elem.style.height = 350
             return done()
           })
