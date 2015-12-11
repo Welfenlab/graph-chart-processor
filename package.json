@@ -5,6 +5,7 @@
   "main": "lib/chart_processor.js",
   "dependencies": {
     "d3": "^3.5.9",
+    "node-uuid": "^1.4.7",
     "nvd3": "fasib/nvd3#fix"
   },
   "devDependencies": {
