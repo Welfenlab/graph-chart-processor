@@ -48,9 +48,20 @@ graphChartProcessor = function (tokens, graph_template, error_template) {
   return {
     parse: parseInput,
     register: function (mdInstance, postProcessors) {
-      markdownItGraph(tokens).register(mdInstance, function (inputStr) {
+      markdownItGraph(tokens).register(mdInstance, function (inputStr, tokens) {
+        var prevJSToken = 0
+        var prevCodeStr = ""
+        for (var i = 0; i < tokens.length; i++) {
+          if (tokens[i].content == inputStr)
+            break;
+          if (tokens[i].info == 'js')
+            prevJSToken = i
+        };
+        // just use the last js token content
+        prevCodeStr += tokens[prevJSToken].content;
+
         try {
-          var data = parseInput(inputStr)
+          var data = parseInput(prevCodeStr + inputStr)
           var id = 'charts-dg-' + uuid.v4()
           postProcessors.registerElemenbById(id, function (elem, done) {
             var fnc, svgElem, svgHeight
@@ -59,7 +70,6 @@ graphChartProcessor = function (tokens, graph_template, error_template) {
               chart = nvd3.models.lineChart()
               chart.useInteractiveGuideline(false) // buggy
               d3.select(elem.childNodes[0]).datum(data).call(chart)
-              nvd3.utils.windowResize(chart.update)
               return chart
             }
             nvd3.addGraph(fnc)

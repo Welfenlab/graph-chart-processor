@@ -19,7 +19,7 @@ module.exports = function (codeTypes) {
           if ((codeTypes.indexOf(fenceToken.info)) > -1) {
             code = fenceToken.content
             origFence.apply(_this, arguments)
-            return genElement(code)
+            return genElement(code, tokens)
           }
           return origFence.apply(_this, arguments)
         }
