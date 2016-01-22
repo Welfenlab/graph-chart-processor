@@ -5,32 +5,60 @@ markdownItGraph = require('./md_graph')
 d3 = require('d3')
 nvd3 = require('nvd3')
 uuid = require('node-uuid')
+//jailed = require('jailed');
 
 parseInput = function (input) {}
 
 graphChartProcessor = function (tokens, graph_template, error_template) {
   parseInput = function (input) {
-    var code, out,
-      code = '\
-    function _plot(input) {\
-      if (typeof(input) == "function")\
-        return input();\
-      return input;\
-    }\
-    function plot() {\
-      _plotData = [];\
-      for(var _i = 0; _i < arguments.length; _i++) {\
-        _plotData.push(_plot(arguments[_i]));\
-      }\
-      return _plotData;\
-    }' + input
+    var working, customApi, disconnect;
+    var out = [];
 
-    out = []
-    try {
-      out = eval(code)
-    } catch (error) {
-      throw 'Failed to parse chart plot javascript<br>' + error
+    working = true
+    customApi = {}
+    customApi.remote = {}
+    disconnect = null
+    customApi.remote["__data__"] = function (remoteData) {
+      out.push(remoteData)
     }
+    customApi.remote["__finished__"] = function () {
+        working = false
+        console.log('finished calcs ', out)
+        disconnect()
+    }
+
+    code2 = '\
+      var run = function () {\
+        var start = null;' + input +
+      '}\
+      var start = function (app) {\
+        this.application = null;\
+        var _plot = function(input) {\
+          if (typeof(input) == "function")\
+            return input();\
+          return input;\
+        }\
+        var __plotData__ = []\
+        var plot = function() {\
+          for(var _i = 0; _i < arguments.length; _i++) {\
+            __plotData__.push(_plot(arguments[_i]));\
+          }\
+        }\
+        run();\
+        app.remote.__data__(__plotData__);\
+        app.remote.__finished__();\
+      }\
+      var globalScope;\
+      if (typeof(window) === "undefined")\
+        globalScope = this\
+      else\
+        globalScope = window\
+      start.call(globalScope, application);\
+      '
+
+    runner = new jailed.DynamicPlugin(code2, customApi.remote);
+    disconnect = runner.disconnect.bind(runner);
+
     var data = []
     var part, line, xyArray, len, len1
     for (var j = 0, len = out.length; j < len; j++) {
