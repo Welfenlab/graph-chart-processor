@@ -45,66 +45,69 @@ getCode = function(input) {
 }
 
 graphChartProcessor = function (tokens, graph_template, error_template) {
-  parseInput = function (input, doneCB) {
-    console.time("Graph-Chart");
-    var working, customApi, disconnect, code;
-    var out = [];
+  parseInput = function (input) {
+    return new Promise(function(resolve, reject) {
+      console.time("Graph-Chart");
+      var working, customApi, disconnect, code;
+      var out = [];
 
-    working = true
-    customApi = {}
-    customApi.remote = {}
-    disconnect = null
-    customApi.remote["__data__"] = function (remoteData) {
-      out.push(remoteData)
-    }
-
-    customApi.remote["__finished__"] = function () {
-      working = false
-      out = out[0]
-      var data = []
-      var part, line, xyArray, len, len1, obj0;
-      for (var j = 0, len = out.length; j < len; j++) {
-        part = out[j]
-        line = []
-        xyArray = []
-        for (var k = 0, len1 = part.length; k < len1; k++) {
-          obj0 = part[k]
-          xyArray.push({ x: obj0[0], y: obj0[1]})
-        }
-        data.push({ values: xyArray, seriesIndex: j, key: '' + j })
+      working = true
+      customApi = {}
+      customApi.remote = {}
+      disconnect = null
+      customApi.remote["__data__"] = function (remoteData) {
+        out.push(remoteData)
       }
-      //console.log(data)
-      //console.log('finished calcs', out, data)
-      console.timeEnd("Graph-Chart");
-      console.time("Graph-Chart-Plot");
-      doneCB(data);
-      console.timeEnd("Graph-Chart-Plot");
-      disconnect()
-      return disconnect;
-    }
 
-    code = getCode(input);
-
-    try {
-      esprima.parse(code);
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-    runner = new jailed.DynamicPlugin(code, customApi.remote);
-    runner.whenFailed(function () {
-      console.warn("jailed.DynamicPlugin failed while ploting/calculating");
-    });
-    disconnect = runner.disconnect.bind(runner);
-    if (defaultTimout > 0)
-      setTimeout((function() {
-        var ref1;
-        if (working) {
-          console.log("(Graph-Chart-) Sandbox timed out after " + defaultTimout + "ms!");
-          console.timeEnd("Graph-Chart");
-          return runner.disconnect();
+      customApi.remote["__finished__"] = function () {
+        working = false
+        out = out[0]
+        var data = []
+        var part, line, xyArray, len, len1, obj0;
+        for (var j = 0, len = out.length; j < len; j++) {
+          part = out[j]
+          line = []
+          xyArray = []
+          for (var k = 0, len1 = part.length; k < len1; k++) {
+            obj0 = part[k]
+            xyArray.push({ x: obj0[0], y: obj0[1]})
+          }
+          data.push({ values: xyArray, seriesIndex: j, key: '' + j })
         }
-      }), defaultTimout);
+        //console.log(data)
+        //console.log('finished calcs', out, data)
+        console.timeEnd("Graph-Chart");
+        console.time("Graph-Chart-Plot");
+        resolve(data);
+        console.timeEnd("Graph-Chart-Plot");
+        disconnect()
+        return disconnect;
+      }
+
+      code = getCode(input);
+
+      try {
+        esprima.parse(code);
+      } catch (error) {
+        console.log(error);
+        return;
+      }
+      runner = new jailed.DynamicPlugin(code, customApi.remote);
+      runner.whenFailed(function () {
+        console.warn("jailed.DynamicPlugin failed while ploting/calculating");
+      });
+      disconnect = runner.disconnect.bind(runner);
+      if (defaultTimout > 0)
+        setTimeout((function() {
+          var ref1;
+          if (working) {
+            console.log("(Graph-Chart-) Sandbox timed out after " + defaultTimout + "ms!");
+            console.timeEnd("Graph-Chart");
+            reject("Sandbox timed out");
+            return runner.disconnect();
+          }
+        }), defaultTimout);
+    });
   }
   return {
     parse: parseInput,
@@ -124,11 +127,11 @@ graphChartProcessor = function (tokens, graph_template, error_template) {
         try {
           var id = 'charts-dg-' + uuid.v4()
           postProcessors.registerElemenbById(id, function (elem, done) {
-            createGraph = function (data) {
+            parseInput(prevCodeStr + inputStr).then(function (data) {
               fnc = function () {
                 var chart
                 chart = nvd3.models.lineChart()
-                chart.useInteractiveGuideline(false) // buggy
+                chart.useInteractiveGuideline(false) // true => buggy
                 d3.select(elem.childNodes[0]).datum(data).call(chart)
                 return chart
               }
@@ -136,9 +139,8 @@ graphChartProcessor = function (tokens, graph_template, error_template) {
               svgElem = elem.getElementsByClassName('output')[0]
               svgHeight = (svgElem != null ? svgElem.getBoundingClientRect().height : void 0) || 0
               elem.style.height = 350
-            }
+            });
 
-            parseInput(prevCodeStr + inputStr, createGraph)
             return done()
           })
           return graph_template({
